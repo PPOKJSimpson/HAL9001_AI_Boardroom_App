@@ -44,7 +44,7 @@ with browser tooling can observe the same room the human sees.
 From the project root:
 
 ```powershell
-.\setup.ps1
+.\bootstrap-boardroom.ps1
 ```
 
 The script:
@@ -57,7 +57,7 @@ The script:
 ## Run
 
 ```powershell
-.\run.ps1
+.\start-boardroom.ps1
 ```
 
 Defaults:
@@ -68,7 +68,7 @@ Defaults:
 Overrides:
 
 ```powershell
-.\run.ps1 -ListenHost 0.0.0.0 -Port 9000
+.\start-boardroom.ps1 -ListenHost 0.0.0.0 -Port 9000
 ```
 
 Open `http://127.0.0.1:8765/` in Chrome.
@@ -101,8 +101,10 @@ Suite covers:
 +-- docs/
 +-- .ai-boardroom/      Project-local session state (gitignored)
 +-- README.md
-+-- setup.ps1
-+-- run.ps1
++-- bootstrap-boardroom.ps1
++-- start-boardroom.ps1
++-- setup.ps1            Compatibility wrapper
++-- run.ps1              Compatibility wrapper
 ```
 
 ## Session State Contract

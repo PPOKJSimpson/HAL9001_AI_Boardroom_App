@@ -37,7 +37,7 @@ cd C:\projects\ai-boardroom
 From the project root, run:
 
 ```powershell
-.\setup.ps1
+.\bootstrap-boardroom.ps1
 ```
 
 What this does:
@@ -54,7 +54,7 @@ If setup completes successfully, the app is ready to run locally.
 Run:
 
 ```powershell
-.\run.ps1
+.\start-boardroom.ps1
 ```
 
 Default address:
@@ -64,7 +64,7 @@ Default address:
 Optional custom host and port:
 
 ```powershell
-.\run.ps1 -ListenHost 0.0.0.0 -Port 9000
+.\start-boardroom.ps1 -ListenHost 0.0.0.0 -Port 9000
 ```
 
 ## 6. Open the Room in Your Browser
@@ -210,7 +210,7 @@ debugging the app.
 
 Use the app like this:
 
-1. Start AI Boardroom with `.\run.ps1`.
+1. Start AI Boardroom with `.\start-boardroom.ps1`.
 2. Open the room in Chrome.
 3. Start the CLI sessions you want to use.
 4. Give each CLI its startup prompt.
@@ -239,7 +239,7 @@ All replies appear in the same chat history.
 
 ## 16. Stop the App
 
-Return to the PowerShell window running `.\run.ps1` and press:
+Return to the PowerShell window running `.\start-boardroom.ps1` and press:
 
 ```text
 Ctrl+C
@@ -252,7 +252,7 @@ Your conversation remains stored under `.ai-boardroom\`.
 To continue later:
 
 1. open PowerShell in the project root
-2. run `.\run.ps1`
+2. run `.\start-boardroom.ps1`
 3. open the app in Chrome again
 
 The transcript will reload from the local storage files.
@@ -274,13 +274,13 @@ This validates:
 
 ## 19. Troubleshooting
 
-If `.\setup.ps1` fails:
+If `.\bootstrap-boardroom.ps1` fails:
 
 - verify Python is installed and on `PATH`
 - verify internet access is available for the setup step
 - rerun the command from the project root
 
-If `.\run.ps1` fails:
+If `.\start-boardroom.ps1` fails:
 
 - make sure setup completed successfully
 - make sure `.venv\` exists
@@ -303,8 +303,8 @@ If an AI does not respond:
 
 The shortest usable flow is:
 
-1. run `.\setup.ps1`
-2. run `.\run.ps1`
+1. run `.\bootstrap-boardroom.ps1`
+2. run `.\start-boardroom.ps1`
 3. open `http://127.0.0.1:8765/`
 4. start your CLI participants in the same project folder
 5. give them the prompt files from `prompts\`
