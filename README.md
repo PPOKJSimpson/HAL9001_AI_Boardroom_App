@@ -54,6 +54,14 @@ The script:
 - install Playwright Chromium when Playwright is installed
 - vendor `vue.esm-browser.prod.js` into `frontend\vendor\`
 
+For a faster repeat bootstrap that skips dependency installation when the venv
+already satisfies `requirements.txt` and skips the Vue download when the
+vendored file already exists:
+
+```powershell
+.\bootstrap-boardroom.ps1 -IfMissingOnly
+```
+
 ## Run
 
 ```powershell

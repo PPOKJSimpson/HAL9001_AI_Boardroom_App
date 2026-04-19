@@ -49,6 +49,18 @@ What this does:
 
 If setup completes successfully, the app is ready to run locally.
 
+For repeat setup runs in the same folder, you can use:
+
+```powershell
+.\bootstrap-boardroom.ps1 -IfMissingOnly
+```
+
+That mode:
+
+- keeps using the local `.venv`
+- skips Python dependency installation if the venv already satisfies `requirements.txt`
+- skips the Vue download if `frontend\vendor\vue.esm-browser.prod.js` already exists
+
 ## 5. Start the App
 
 Run:

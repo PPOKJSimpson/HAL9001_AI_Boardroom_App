@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$Python = "python",
-    [string]$VueVersion = "3.5.13"
+    [string]$VueVersion = "3.5.13",
+    [switch]$IfMissingOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,8 +29,21 @@ Write-Host "Upgrading pip"
 & $VenvPython -m pip install --upgrade pip
 
 if (Test-Path -LiteralPath $RequirementsPath) {
-    Write-Host "Installing dependencies from requirements.txt"
-    & $VenvPython -m pip install -r $RequirementsPath
+    if ($IfMissingOnly) {
+        Write-Host "Checking whether requirements are already satisfied"
+        & $VenvPython -m pip install --dry-run -r $RequirementsPath | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Requirements already satisfied. Skipping dependency install."
+        }
+        else {
+            Write-Host "Installing missing dependencies from requirements.txt"
+            & $VenvPython -m pip install -r $RequirementsPath
+        }
+    }
+    else {
+        Write-Host "Installing dependencies from requirements.txt"
+        & $VenvPython -m pip install -r $RequirementsPath
+    }
 }
 else {
     Write-Warning "requirements.txt not found. Skipping dependency install for now."
@@ -49,7 +63,12 @@ if (-not (Test-Path -LiteralPath $VendorDir)) {
     New-Item -ItemType Directory -Path $VendorDir | Out-Null
 }
 
-Write-Host "Vendoring Vue runtime from $VueUrl"
-Invoke-WebRequest -Uri $VueUrl -OutFile $VendorVuePath
+if ((Test-Path -LiteralPath $VendorVuePath) -and $IfMissingOnly) {
+    Write-Host "Vendored Vue runtime already exists. Skipping download."
+}
+else {
+    Write-Host "Vendoring Vue runtime from $VueUrl"
+    Invoke-WebRequest -Uri $VueUrl -OutFile $VendorVuePath
+}
 
 Write-Host "Setup complete."
