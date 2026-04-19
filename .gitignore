@@ -9,5 +9,8 @@ venv/
 node_modules/
 .playwright/
 test-results/
-frontend/vendor/
+frontend/vendor/*
+!frontend/vendor/fonts/
+!frontend/vendor/fonts/**
+frontend/vendor/vue.esm-browser.prod.js
 pytest-cache-files-*/
