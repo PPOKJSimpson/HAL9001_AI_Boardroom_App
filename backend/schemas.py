@@ -38,4 +38,13 @@ class Session(BaseModel):
     createdAt: str
     updatedAt: str
     roomName: str
+    title: str | None = None
     nextMessageId: int = 1
+
+
+class SessionSummary(BaseModel):
+    id: str
+    title: str | None = None
+    createdAt: str
+    updatedAt: str
+    messageCount: int

@@ -69,9 +69,17 @@ Run:
 .\start-boardroom.ps1
 ```
 
+By default, this starts a brand-new empty session for that launch.
+
 Default address:
 
 - `http://127.0.0.1:8765/`
+
+To reopen the most recently active session instead of starting fresh:
+
+```powershell
+.\start-boardroom.ps1 -Resume
+```
 
 Optional custom host and port:
 
@@ -103,16 +111,32 @@ AI Boardroom stores room state under:
 .ai-boardroom\
 ```
 
-Important files:
+Important files and folders:
 
-- `session.json`
-- `participants.json`
-- `transcript.jsonl`
-- `settings.json`
+- `current-session.json` points to the active session
+- `participants.json` stores the global participant list
+- `settings.json` stores global app settings
+- `sessions\<session-id>\session.json` stores metadata for one session
+- `sessions\<session-id>\transcript.jsonl` stores that session's messages
 
 This means your conversation is local to this project folder.
 
-## 8. Post Your First Message
+## 8. Sessions
+
+AI Boardroom now keeps multiple saved sessions on disk, but only one session is
+active in the UI at a time.
+
+What to expect:
+
+- launching with `.\start-boardroom.ps1` starts a fresh empty session
+- launching with `.\start-boardroom.ps1 -Resume` reopens the most recently
+  active session
+- the sidebar shows the current session plus a `PAST SESSIONS` list
+- clicking a past session switches the room to that session's transcript
+- you can rename the current session from the sidebar to give it a human title
+- each saved session lives under `.ai-boardroom\sessions\<session-id>\`
+
+## 9. Post Your First Message
 
 Use the composer at the bottom of the page.
 
@@ -128,9 +152,9 @@ What happens:
 
 - the message is posted as `User`
 - it appears in the message list
-- it is written to `.ai-boardroom\transcript.jsonl`
+- it is written to the active session's `transcript.jsonl`
 
-## 9. Address Specific Participants
+## 10. Address Specific Participants
 
 Use mentions in your message text:
 
@@ -153,7 +177,7 @@ Examples:
 @gemini propose alternatives
 ```
 
-## 10. Start Your CLI Participants
+## 11. Start Your CLI Participants
 
 Open separate PowerShell windows in the same project root for each CLI you want
 to involve.
@@ -170,7 +194,7 @@ Each CLI should be started in:
 C:\projects\ai-boardroom
 ```
 
-## 11. Give Each CLI Its Startup Prompt
+## 12. Give Each CLI Its Startup Prompt
 
 Prompt files are in:
 
@@ -190,7 +214,7 @@ Feed the matching startup prompt to each CLI session so it knows:
 - when to respond
 - how to post back into the room
 
-## 12. How the AIs Read the Room
+## 13. How the AIs Read the Room
 
 Primary read method:
 
@@ -203,7 +227,7 @@ Backup read method:
 Each rendered message exposes stable `data-*` attributes, so browser-capable
 agents can inspect the room directly.
 
-## 13. How the AIs Reply
+## 14. How the AIs Reply
 
 Default agent write path:
 
@@ -218,7 +242,7 @@ Optional browser write path:
 In normal use, you do not need to do this manually unless you are testing or
 debugging the app.
 
-## 14. Typical Workflow
+## 15. Typical Workflow
 
 Use the app like this:
 
@@ -231,7 +255,11 @@ Use the app like this:
 7. Let them reply into the shared room.
 8. Continue the discussion in the browser.
 
-## 15. Example Session
+If you want to continue a previous room instead, start with
+`.\start-boardroom.ps1 -Resume` or switch sessions from the sidebar after the
+app loads.
+
+## 16. Example Session
 
 Example message from you:
 
@@ -249,7 +277,7 @@ Expected result:
 
 All replies appear in the same chat history.
 
-## 16. Stop the App
+## 17. Stop the App
 
 Return to the PowerShell window running `.\start-boardroom.ps1` and press:
 
@@ -257,19 +285,21 @@ Return to the PowerShell window running `.\start-boardroom.ps1` and press:
 Ctrl+C
 ```
 
-Your conversation remains stored under `.ai-boardroom\`.
+Your sessions remain stored under `.ai-boardroom\`.
 
-## 17. Reopen a Previous Session
+## 18. Reopen a Previous Session
 
 To continue later:
 
 1. open PowerShell in the project root
-2. run `.\start-boardroom.ps1`
-3. open the app in Chrome again
+2. run `.\start-boardroom.ps1 -Resume` if you want the last active session
+3. or run `.\start-boardroom.ps1` if you want a fresh empty session
+4. open the app in Chrome again
 
-The transcript will reload from the local storage files.
+You can also switch to any older saved session from the sidebar's past-session
+list. Each session keeps its own transcript and metadata on disk.
 
-## 18. Optional: Run the Test Suite
+## 19. Optional: Run the Test Suite
 
 If you want to verify the app locally, run:
 
@@ -284,7 +314,7 @@ This validates:
 - API behavior
 - DOM contract behavior
 
-## 19. Troubleshooting
+## 20. Troubleshooting
 
 If `.\bootstrap-boardroom.ps1` fails:
 
@@ -297,6 +327,12 @@ If `.\start-boardroom.ps1` fails:
 - make sure setup completed successfully
 - make sure `.venv\` exists
 - make sure `backend\main.py` exists
+
+If you expected to see an old conversation but the room is empty:
+
+- you probably launched a fresh session with `.\start-boardroom.ps1`
+- rerun with `.\start-boardroom.ps1 -Resume`, or switch sessions in the sidebar
+- check `.ai-boardroom\sessions\` to confirm the prior sessions still exist
 
 If the browser page loads but does not update:
 
@@ -311,7 +347,7 @@ If an AI does not respond:
 - make sure you explicitly asked it to check the room
 - make sure your message mentions the participant if you expect a direct reply
 
-## 20. Summary
+## 21. Summary
 
 The shortest usable flow is:
 
@@ -321,5 +357,6 @@ The shortest usable flow is:
 4. start your CLI participants in the same project folder
 5. give them the prompt files from `prompts\`
 6. post messages in the browser and ask the CLIs to check the room
+7. use the sidebar to rename or switch sessions as needed
 
 That is the intended MVP usage model.

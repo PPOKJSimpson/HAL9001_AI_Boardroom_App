@@ -177,8 +177,15 @@ const FallbackRoomHeader = {
 };
 
 const FallbackSessionSidebar = {
+  emits: ["switch-session", "new-session", "rename-session"],
   props: {
     session: { type: Object, default: null },
+    sessions: { type: Array, default: () => [] },
+  },
+  data() {
+    return {
+      draftTitle: "",
+    };
   },
   computed: {
     sessionId() {
@@ -189,6 +196,29 @@ const FallbackSessionSidebar = {
     },
     projectPath() {
       return this.session?.projectPath || "—";
+    },
+    pastSessions() {
+      const currentId = this.session?.id;
+      return this.sessions.filter((session) => session.id !== currentId);
+    },
+  },
+  watch: {
+    session: {
+      immediate: true,
+      handler(session) {
+        this.draftTitle = session?.title || "";
+      },
+    },
+  },
+  methods: {
+    emitRename() {
+      if (!this.session) {
+        return;
+      }
+      this.$emit("rename-session", {
+        id: this.session.id,
+        title: this.draftTitle,
+      });
     },
   },
   template: `
@@ -201,7 +231,28 @@ const FallbackSessionSidebar = {
         <dd>{{ roomName }}</dd>
         <dt>PROJECT</dt>
         <dd class="session-path">{{ projectPath }}</dd>
+        <dt>TITLE</dt>
+        <dd>
+          <input
+            class="session-title-input"
+            v-model="draftTitle"
+            @blur="emitRename"
+            @keydown.enter.prevent="emitRename"
+            aria-label="Session title"
+          />
+        </dd>
       </dl>
+      <button class="session-new-btn" type="button" @click="$emit('new-session')">NEW SESSION</button>
+      <ul class="past-sessions" v-if="pastSessions.length > 0">
+        <li
+          v-for="item in pastSessions"
+          :key="item.id"
+          class="past-session-row"
+          @click="$emit('switch-session', item.id)"
+        >
+          <span>{{ item.title || item.id }}</span>
+        </li>
+      </ul>
     </aside>
   `,
 };
@@ -222,17 +273,20 @@ const MessageList = messageListModule?.MessageList || FallbackMessageList;
 const Composer = composerModule?.Composer || FallbackComposer;
 const RoomHeader = roomHeaderModule?.RoomHeader || FallbackRoomHeader;
 const SessionSidebar = sessionSidebarModule?.SessionSidebar || FallbackSessionSidebar;
+const SESSION_LIST_REFRESH_INTERVAL = 5;
 
 const App = {
   components: { SessionSidebar, RoomHeader, MessageList, Composer },
   data() {
     return {
       session: null,
+      sessions: [],
       participants: [],
       messages: [],
       error: null,
       pollHandle: null,
       refreshInFlight: false,
+      refreshTick: 0,
     };
   },
   async mounted() {
@@ -246,12 +300,14 @@ const App = {
   methods: {
     async bootstrap() {
       try {
-        const [session, participants, messages] = await Promise.all([
+        const [session, sessions, participants, messages] = await Promise.all([
           api.getSession(),
+          api.listSessions(),
           api.getParticipants(),
           api.getMessages(),
         ]);
         this.session = session;
+        this.sessions = sessions;
         this.participants = participants;
         this.messages = messages;
         this.error = null;
@@ -279,10 +335,25 @@ const App = {
       }
       this.refreshInFlight = true;
       try {
-        const latest = await api.getMessages();
+        const [session, latest] = await Promise.all([
+          api.getSession(),
+          api.getMessages(),
+        ]);
+
+        if (this.session && session.id !== this.session.id) {
+          await this.bootstrap();
+          this.$nextTick(() => this.scrollToBottom());
+          return;
+        }
+
         const wasAtBottom = this.isScrolledToBottom();
         const hadNewMessage = latest.length > this.messages.length;
+        this.session = session;
         this.messages = latest;
+        this.refreshTick += 1;
+        if (this.refreshTick % SESSION_LIST_REFRESH_INTERVAL === 0) {
+          this.sessions = await api.listSessions();
+        }
         this.error = null;
         if (wasAtBottom && hadNewMessage) {
           this.$nextTick(() => this.scrollToBottom());
@@ -305,6 +376,24 @@ const App = {
       this.error = null;
       this.$nextTick(() => this.scrollToBottom());
     },
+    async handleNewSession() {
+      await api.createSession(null);
+      await this.bootstrap();
+      this.$nextTick(() => this.scrollToBottom());
+    },
+    async handleSwitchSession(id) {
+      await api.activateSession(id);
+      await this.bootstrap();
+      this.$nextTick(() => this.scrollToBottom());
+    },
+    async handleRenameSession({ id, title }) {
+      const session = await api.renameSession(id, title);
+      if (this.session?.id === id) {
+        this.session = session;
+      }
+      this.sessions = await api.listSessions();
+      this.error = null;
+    },
     isScrolledToBottom() {
       const element = this.$refs.scroll;
       if (!element) {
@@ -321,7 +410,13 @@ const App = {
   },
   template: `
     <div class="app-shell">
-      <SessionSidebar :session="session" />
+      <SessionSidebar
+        :session="session"
+        :sessions="sessions"
+        @new-session="handleNewSession"
+        @switch-session="handleSwitchSession"
+        @rename-session="handleRenameSession"
+      />
       <main class="room-main">
         <RoomHeader
           :room-name="session?.roomName || 'main'"

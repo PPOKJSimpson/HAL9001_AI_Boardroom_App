@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from backend.schemas import Message, MessageCreate, Participant, Session
+from backend.schemas import Message, MessageCreate, Participant, Session, SessionSummary
 
 
 def test_message_create_accepts_valid_payload():
@@ -64,6 +64,7 @@ def test_session_has_required_fields():
         roomName="main",
     )
     assert session.roomName == "main"
+    assert session.title is None
 
 
 def test_session_defaults_next_message_id_to_one():
@@ -75,3 +76,28 @@ def test_session_defaults_next_message_id_to_one():
         roomName="main",
     )
     assert session.nextMessageId == 1
+
+
+def test_session_title_round_trips_json():
+    session = Session(
+        id="sess-abc",
+        projectPath=".",
+        createdAt="2026-04-19T14:00:00-05:00",
+        updatedAt="2026-04-19T14:00:00-05:00",
+        roomName="main",
+        title="API review",
+    )
+    restored = Session.model_validate_json(session.model_dump_json())
+    assert restored.title == "API review"
+
+
+def test_session_summary_requires_core_fields_and_defaults_title():
+    summary = SessionSummary(
+        id="sess-abc",
+        createdAt="2026-04-19T14:00:00-05:00",
+        updatedAt="2026-04-19T14:05:00-05:00",
+        messageCount=3,
+    )
+    assert summary.title is None
+    with pytest.raises(ValidationError):
+        SessionSummary(id="sess-abc", createdAt="x", updatedAt="y")  # type: ignore[call-arg]

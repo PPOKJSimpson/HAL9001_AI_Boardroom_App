@@ -12,6 +12,7 @@ def create_app() -> FastAPI:
     from backend import storage
 
     storage.init_storage(PROJECT_ROOT)
+    storage.ensure_current_session(PROJECT_ROOT)
     app = FastAPI(title="AI Boardroom", version="0.1.0")
     app.add_middleware(
         CORSMiddleware,

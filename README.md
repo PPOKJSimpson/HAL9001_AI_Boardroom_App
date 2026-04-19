@@ -68,10 +68,19 @@ vendored file already exists:
 .\start-boardroom.ps1
 ```
 
+By default, each launch starts a fresh, empty session. Previous sessions stay
+on disk and remain available from the sidebar.
+
 Defaults:
 
 - host: `127.0.0.1`
 - port: `8765`
+
+Resume the most recently active session instead of starting fresh:
+
+```powershell
+.\start-boardroom.ps1 -Resume
+```
 
 Overrides:
 
@@ -107,7 +116,14 @@ Suite covers:
 +-- prompts/            Startup prompts for Codex / Claude / Gemini
 +-- tests/
 +-- docs/
-+-- .ai-boardroom/      Project-local session state (gitignored)
++-- .ai-boardroom/      Project-local runtime state (gitignored)
+|   +-- current-session.json   Active-session pointer
+|   +-- participants.json      Global participant roster
+|   +-- settings.json          Global app settings
+|   +-- sessions/
+|       +-- sess-<id>/
+|           +-- session.json   Per-session metadata
+|           +-- transcript.jsonl  Per-session message history
 +-- README.md
 +-- bootstrap-boardroom.ps1
 +-- start-boardroom.ps1
@@ -117,12 +133,19 @@ Suite covers:
 
 ## Session State Contract
 
-The MVP stores room data under `.ai-boardroom/`:
+The app stores runtime data under `.ai-boardroom/`:
 
-- `session.json` for room/session metadata and `nextMessageId`
-- `participants.json` for `User`, `Codex`, `Claude`, `Gemini`
-- `transcript.jsonl` for append-only message history
-- `settings.json` for polling interval and room preferences
+- `current-session.json` points at the active session id
+- `participants.json` stores the global `User`, `Codex`, `Claude`, `Gemini`
+  roster
+- `settings.json` stores global polling interval and room preferences
+- `sessions/<id>/session.json` stores per-session metadata, title, and
+  `nextMessageId`
+- `sessions/<id>/transcript.jsonl` stores append-only history for that session
+
+Each normal `.\start-boardroom.ps1` launch creates a new current session unless
+you pass `-Resume`. Older sessions remain available under
+`.ai-boardroom/sessions/` and can be reopened from the UI.
 
 ## Prompt Files
 

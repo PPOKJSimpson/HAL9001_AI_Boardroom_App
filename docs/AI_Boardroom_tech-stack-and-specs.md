@@ -89,22 +89,45 @@ Recommended project-local directory:
 
 ```text
 .ai-boardroom/
-  session.json
+  current-session.json
   participants.json
-  transcript.jsonl
   settings.json
+  sessions/
+    sess-xxx/
+      session.json
+      transcript.jsonl
 ```
 
 Suggested purpose of each file:
-- `session.json`: session metadata such as session ID, project path, created time, updated time, current room name
-- `participants.json`: known participant identities such as User, Codex, Claude, Gemini
-- `transcript.jsonl`: append-only message history, one JSON object per line
-- `settings.json`: room-level preferences, UI settings, or future configuration
+- `current-session.json`: runtime-managed pointer to the current active session
+- `participants.json`: known participant identities such as User, Codex, Claude, Gemini; global to the project, not per-session
+- `settings.json`: room-level preferences, UI settings, or future configuration; global to the project, not per-session
+- `sessions/<id>/session.json`: per-session metadata such as session ID, title, project path, created time, updated time, current room name, and `nextMessageId`
+- `sessions/<id>/transcript.jsonl`: append-only message history for that session, one JSON object per line
 
 Optional later additions:
 - `prompts/`
 - `attachments/`
 - `snapshots/`
+
+This layout follows [ADR 0002](adr/0002-session-model.md): one active session
+at a time, with older sessions preserved on disk instead of merged into one
+root-level transcript.
+
+## Session Lifecycle
+
+AI Boardroom uses a single-active-session model.
+
+- A normal launcher run starts a fresh empty session by clearing the current-session pointer before backend startup.
+- The backend recreates or resumes the current session through `ensure_current_session()`.
+- Previous sessions remain under `.ai-boardroom/sessions/<id>/` and can be reactivated later.
+- The current-session pointer determines which session `GET /api/session`, `GET /api/messages`, and `POST /api/messages` operate on.
+
+Session-management endpoints:
+- `GET /api/sessions` lists saved sessions
+- `POST /api/sessions` creates a new session and makes it current
+- `POST /api/sessions/{id}/activate` switches the active session
+- `PATCH /api/sessions/{id}` updates a session title
 
 ## Core Architecture
 
@@ -306,8 +329,8 @@ Possible later upgrade:
 - Keep session metadata current
 
 ### File behavior
-- `transcript.jsonl` should be append-only for normal message writes
-- `session.json` should track last-updated timestamps
+- `sessions/<id>/transcript.jsonl` should be append-only for normal message writes
+- `sessions/<id>/session.json` should track last-updated timestamps and the next message counter for that session
 - File writes should be simple and durable
 
 ### Error handling
@@ -363,7 +386,7 @@ Expected behavior:
 ### Session setup
 1. User opens a project folder.
 2. User launches AI Boardroom.
-3. AI Boardroom initializes or opens `.ai-boardroom/` for the project.
+3. AI Boardroom initializes `.ai-boardroom/`, creates a fresh current session by default, and preserves older sessions under `.ai-boardroom/sessions/`.
 4. User opens CLI sessions for Codex, Claude, and Gemini.
 5. User provides each CLI with its startup prompt.
 6. Each CLI joins the room conceptually by reading the AI Boardroom page and optionally posting a hello message.

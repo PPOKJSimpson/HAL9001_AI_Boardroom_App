@@ -160,11 +160,30 @@ This is a strong fit for the product because:
 Recommended direction:
 - Store AI Boardroom data in a project-local hidden folder such as `.ai-boardroom/`
 
-Possible contents:
-- Session metadata
-- Persisted transcript
-- Participant metadata
-- Future prompt templates or room configuration
+Current session-storage direction, per [ADR 0002](adr/0002-session-model.md):
+
+```text
+.ai-boardroom/
+  current-session.json
+  participants.json
+  settings.json
+  sessions/
+    sess-xxx/
+      session.json
+      transcript.jsonl
+```
+
+What lives where:
+- `current-session.json` points at the single active session for the running app
+- `participants.json` remains project-global because participant identities do not change per session
+- `settings.json` remains project-global for shared UI or room preferences
+- `sessions/<id>/session.json` stores per-session metadata such as title, timestamps, room name, and message counter
+- `sessions/<id>/transcript.jsonl` stores that session's append-only transcript
+
+This preserves prior sessions on disk while keeping the product's mental model
+simple: one active room at a time, with old sessions available to reopen later.
+Launching the app normally starts a fresh session by default; resuming an older
+session is an explicit action rather than implicit carry-over.
 
 This project-local storage does not replace the DOM as the read surface. It supports persistence and continuity.
 
@@ -226,35 +245,31 @@ The DOM should also be intentionally structured so CLI agents can reliably parse
 
 ## Visual Design Direction
 
-The intended visual direction is neo-brutalist.
+The intended visual direction is a **pixelated-terminal aesthetic** — the room should feel like a persistent CRT session, not a SaaS collaboration dashboard.
 
-The goal is not to make the product look sloppy or unfinished. The goal is to preserve a raw, structural attitude while making the application feel substantial, custom-built, and deliberately constructed.
+The goal is to preserve a focused, operator-console attitude: a dark room with phosphor accents, pixel typography on chrome, and clean monospace on bodies so long threads stay readable.
 
 Design characteristics:
-- Bold geometry
-- Assertive spacing
-- High contrast
-- Strong outlines and visible structure
-- Unpolished edges without losing clarity
-- Confident layouts that feel intentional rather than templated
+- Near-black base with a faint scanline overlay
+- Pixel display font (VT323 or equivalent) on titles, labels, IDs, and chrome
+- Clean monospace (JetBrains Mono) on message bodies
+- Per-participant accent colors drawn from a terminal palette (amber for User, phosphor green for Codex, rust/orange for Claude, cyan for Gemini)
+- Message cards as flat dark surfaces with a thin left-border stripe in the sender's accent color
+- Hard 1px lines for structure — no soft shadows, no rounded corners
+- Box-drawing characters (`▶`, `├─`, `│`, `#`, `//`) as subtle structural accents in headers, sidebars, and empty states
+- A blinking `$` prompt marker in the composer
+- Subtle phosphor text-shadow glow reserved for titles and the composer caret — not applied to body text
 
-The interface should feel like a master-crafted digital workspace with real weight and presence, not a generic SaaS dashboard.
-
-This should influence the UI in the following ways:
-- Thick borders and strong panel separation
-- Hard-edged cards and containers
-- Distinct visual hierarchy for room title, participants, and message authors
-- Large or expressive typography in key structural areas
-- A limited but assertive color palette
-- Layouts that feel architectural rather than soft or minimal
+The interface should feel like a terminal session someone is proud of: dense, deliberate, legible under continuous use.
 
 The design should avoid:
-- Overly polished glassmorphism
+- Glassmorphism, blur, transparency
+- Rounded corners
 - Soft generic collaboration-app styling
-- Flat white-box dashboard conventions
-- Decorative chaos that hurts readability
+- Heavy CRT gimmicks that hurt readability (aggressive chromatic aberration, warp distortion, flicker)
+- Bright saturated backgrounds
 
-The page should feel substantial and functional, with layered sections, clear structure, and a sense of intentional construction.
+The page should feel like an operator console — structured, observable, and at home on a dark monitor late at night.
 
 ## Technology Direction
 

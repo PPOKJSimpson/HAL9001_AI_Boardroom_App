@@ -13,9 +13,34 @@ def storage_dir(tmp_path: Path) -> Path:
 @pytest.fixture
 def initialized_storage(storage_dir: Path) -> Path:
     """Temporary project folder with .ai-boardroom/ already initialized."""
-    from backend.storage import init_storage
+    from backend.storage import ensure_current_session, init_storage
 
     init_storage(storage_dir)
+    ensure_current_session(storage_dir)
+    return storage_dir
+
+
+@pytest.fixture
+def legacy_storage(storage_dir: Path) -> Path:
+    """Temporary project folder with the legacy flat storage layout pre-created."""
+    from backend.schemas import Session
+    from backend.storage import storage_path
+
+    root = storage_path(storage_dir)
+    root.mkdir(parents=True, exist_ok=True)
+    session = Session(
+        id="sess-legacy01",
+        projectPath=str(storage_dir.resolve()),
+        createdAt="2026-04-19T10:00:00-05:00",
+        updatedAt="2026-04-19T10:00:00-05:00",
+        roomName="main",
+        nextMessageId=2,
+    )
+    (root / "session.json").write_text(session.model_dump_json(indent=2), encoding="utf-8")
+    (root / "transcript.jsonl").write_text(
+        '{"id":"msg-001","roomId":"main","sender":"User","senderType":"human","text":"legacy","mentions":[],"replyTo":null,"timestamp":"2026-04-19T10:00:01-05:00"}\n',
+        encoding="utf-8",
+    )
     return storage_dir
 
 

@@ -12,9 +12,36 @@ async function request(path, init = {}) {
   return response.json();
 }
 
+function hasSessionTitle(title) {
+  return typeof title === "string" && title.trim() !== "";
+}
+
 export const api = {
   getSession() {
     return request("/api/session");
+  },
+  listSessions() {
+    return request("/api/sessions");
+  },
+  createSession(title) {
+    const init = { method: "POST" };
+    if (hasSessionTitle(title)) {
+      init.headers = JSON_HEADERS;
+      init.body = JSON.stringify({ title });
+    }
+    return request("/api/sessions", init);
+  },
+  activateSession(id) {
+    return request(`/api/sessions/${id}/activate`, {
+      method: "POST",
+    });
+  },
+  renameSession(id, title) {
+    return request(`/api/sessions/${id}`, {
+      method: "PATCH",
+      headers: JSON_HEADERS,
+      body: JSON.stringify({ title }),
+    });
   },
   getParticipants() {
     return request("/api/participants");
