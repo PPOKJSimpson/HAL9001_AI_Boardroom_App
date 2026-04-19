@@ -1,0 +1,13 @@
+.ai-boardroom/
+__pycache__/
+*.pyc
+.pytest_cache/
+.pytest_tmp/
+.pytest-tmp/
+.venv/
+venv/
+node_modules/
+.playwright/
+test-results/
+frontend/vendor/
+pytest-cache-files-*/

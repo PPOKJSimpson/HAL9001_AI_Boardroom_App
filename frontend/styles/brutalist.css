@@ -1,0 +1,353 @@
+:root {
+  --ink: #0a0a0a;
+  --paper: #f2efe6;
+  --panel: #ffffff;
+  --border: 3px solid var(--ink);
+  --border-thick: 4px solid var(--ink);
+  --accent-user: #ffd400;
+  --accent-codex: #00c2a8;
+  --accent-claude: #d97a2d;
+  --accent-gemini: #4a6ee0;
+  --accent-system: #bbbbbb;
+  --accent-grid: rgba(10, 10, 10, 0.08);
+  --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  --font-display: "Space Grotesk", "Arial Narrow", sans-serif;
+  --shadow-hard: 6px 6px 0 0 var(--ink);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    linear-gradient(var(--accent-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--accent-grid) 1px, transparent 1px),
+    var(--paper);
+  background-size: 18px 18px, 18px 18px, auto;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top left, rgba(255, 212, 0, 0.18), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(0, 194, 168, 0.16), transparent 30%);
+}
+
+#app,
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.session-sidebar {
+  position: relative;
+  z-index: 1;
+  background: var(--panel);
+  border-right: var(--border-thick);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sidebar-header {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  border-bottom: var(--border);
+  padding-bottom: 10px;
+}
+
+.session-facts {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.session-facts dt {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  opacity: 0.7;
+}
+
+.session-facts dd {
+  margin: 0 0 10px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.room-main {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  min-height: 0;
+}
+
+.room-header {
+  border-bottom: var(--border-thick);
+  padding: 16px 20px;
+  background: var(--panel);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.room-title-block {
+  min-width: 0;
+}
+
+.room-label {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  opacity: 0.7;
+}
+
+.room-title {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.4rem);
+  font-weight: 800;
+  text-transform: lowercase;
+}
+
+.participant-strip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.participant-chip {
+  border: var(--border);
+  padding: 6px 10px;
+  background: var(--panel);
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 3px 3px 0 0 var(--ink);
+}
+
+.participant-role {
+  font-weight: 400;
+  opacity: 0.65;
+  font-size: 11px;
+}
+
+.participant-name-user {
+  background: var(--accent-user);
+}
+
+.participant-name-codex {
+  background: var(--accent-codex);
+  color: var(--paper);
+}
+
+.participant-name-claude {
+  background: var(--accent-claude);
+  color: var(--paper);
+}
+
+.participant-name-gemini {
+  background: var(--accent-gemini);
+  color: var(--paper);
+}
+
+.participant-name-system {
+  background: var(--accent-system);
+}
+
+.room-scroll {
+  overflow-y: auto;
+  padding: 20px;
+  min-height: 0;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.message {
+  border: var(--border);
+  background: var(--panel);
+  padding: 12px 14px;
+  max-width: 760px;
+  box-shadow: var(--shadow-hard);
+}
+
+.message-system {
+  background: #efefef;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+  gap: 12px;
+}
+
+.sender {
+  display: inline-block;
+  padding: 2px 6px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.sender-user {
+  color: var(--ink);
+  background: var(--accent-user);
+}
+
+.sender-codex {
+  color: var(--paper);
+  background: var(--accent-codex);
+}
+
+.sender-claude {
+  color: var(--paper);
+  background: var(--accent-claude);
+}
+
+.sender-gemini {
+  color: var(--paper);
+  background: var(--accent-gemini);
+}
+
+.sender-system {
+  color: var(--ink);
+  background: var(--accent-system);
+}
+
+time {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.message-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.empty-room {
+  border: var(--border);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow-hard);
+  text-align: center;
+  padding: 40px;
+  opacity: 0.75;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  border-top: var(--border-thick);
+  background: var(--panel);
+}
+
+.composer-input {
+  min-height: 84px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  border: 0;
+  padding: 14px 16px;
+  resize: vertical;
+  outline: none;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.composer-input:focus {
+  background: #fff8d6;
+}
+
+.composer-send {
+  border: 0;
+  border-left: var(--border-thick);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  padding: 0 28px;
+  cursor: pointer;
+}
+
+.composer-send:disabled {
+  background: #6a6a6a;
+  cursor: not-allowed;
+}
+
+.error-banner {
+  background: #b50000;
+  color: var(--paper);
+  padding: 8px 16px;
+  font-weight: 700;
+  border-top: var(--border-thick);
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .session-sidebar {
+    border-right: 0;
+    border-bottom: var(--border-thick);
+    padding: 16px;
+  }
+
+  .room-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .participant-strip {
+    justify-content: flex-start;
+  }
+
+  .message {
+    max-width: none;
+  }
+
+  .composer {
+    grid-template-columns: 1fr;
+  }
+
+  .composer-send {
+    border-left: 0;
+    border-top: var(--border-thick);
+    min-height: 56px;
+  }
+}
